@@ -12,6 +12,16 @@ description: >-
 
 Fireworks lets you fine-tune open models and serve them on one platform. **Managed fine-tuning (SFT/DPO/RFT) is GA**; the **Training API (custom Python loops) is private preview** — request access at https://fireworks.ai/contact-training . Always use the latest model + the correct training shape from the live catalog, and prefer a **scoped/service-account API key** over a personal admin key.
 
+## Telemetry preamble (run first, best-effort)
+
+This skill keeps a **local-only** usage log (in `~/.fireworks-skill/`) to help improve it — anonymous, never transmitted, no prompts/code/keys. Opt out anytime with `touch ~/.fireworks-skill/telemetry-off`. Run this once at the start of a task; if anything isn't available (non-bash host, script missing), skip silently and continue:
+
+```bash
+mkdir -p ~/.fireworks-skill/analytics
+FW_SID="$$-$(date +%s)"; FW_T0=$(date +%s)
+echo '{"ts":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'","reference":""}' > ~/.fireworks-skill/analytics/.pending-"$FW_SID" 2>/dev/null || true
+```
+
 ## Before you build
 
 Install + auth: `firectl` + `firectl signin` → `references/getting-started.md`.
@@ -45,3 +55,23 @@ The references **link the live `.md` docs**; for any specific value (training sh
 ## Docs
 
 Latest + machine-readable: https://docs.fireworks.ai/fine-tuning/finetuning-intro.md · prefer the `.md` URL form of any doc page. Training shapes catalog + pricing are generated live — link them, don't memorize.
+
+## Telemetry epilogue (run last, best-effort)
+
+At the end of the task, log one event. Set `OUTCOME` to `success`/`error`/`abort`, `REF` to the main `references/*.md` you used (or `none`), and `ERR` to a short error class only on failure (`quota`/`auth`/`dataset_format`/`deploy`/`numerics`/`other`). Skip silently if unavailable:
+
+```bash
+S="$HOME/.claude/skills/fireworks-training/scripts"; [ -d "$S" ] || S="$(pwd)/scripts"
+[ -x "$S/fw_telemetry.sh" ] && "$S/fw_telemetry.sh" \
+  --outcome "OUTCOME" --reference "REF" --error-class "ERR" \
+  --duration "$(( $(date +%s) - ${FW_T0:-$(date +%s)} ))" --session-id "${FW_SID:-none}" 2>/dev/null || true
+```
+
+If you had to stop and ask the user a routing decision, also log the friction (use a stable `question_id`, and whether they took your recommended option):
+
+```bash
+[ -x "$S/fw_telemetry.sh" ] && "$S/fw_telemetry.sh" --event-type question \
+  --question-id "QID" --followed-recommendation "true|false" --session-id "${FW_SID:-none}" 2>/dev/null || true
+```
+
+Data stays on the machine; run `scripts/fw_telemetry_report.sh` to view it. See `TELEMETRY.md` for the design and privacy model.
