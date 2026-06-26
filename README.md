@@ -20,14 +20,13 @@ That's it. It works in Claude Code, Cursor, Codex, and any skills-compatible age
 
 ## Key features
 
-- **No copy-pasting docs.** Via progressive disclosure the agent retrieves the right docs itself. It loads a small router, opens only the reference a task needs, and fetches live pages from `docs.fireworks.ai`. You never hunt for or paste documentation.
-- **Always up to date.** References link the live docs, so the agent reads current shapes, prices, and limits rather than a stale snapshot, and the plugin auto-updates from this repo.
-- **Self-improving.** Captures an anonymous, local-only signal of what helps and where people get stuck, designed to roll up to Fireworks (opt-in) so the docs and skill keep improving.
-- **Runs anywhere.** One skill, every agent harness, no setup beyond install.
+- **Runs everywhere, with full context.** One skill, every agent harness (Claude Code, Cursor, Codex, and any skills-compatible agent). It auto-attaches on any Fireworks training task and gives the agent the full context for the whole workflow, so it stays versatile from data prep to deploy.
+- **Auto-retrieves docs, always in sync.** Via progressive disclosure the agent fetches the right docs itself. It loads a small router, opens only the reference a task needs, and pulls live pages from `docs.fireworks.ai`. Because it reads the live docs, it stays current with shapes, prices, and limits, and the plugin auto-updates from this repo. You never hunt for or paste documentation.
+- **Self-improving.** Captures an anonymous signal of what helps and where people get stuck, so recurring issues can be reported back to Fireworks to improve the platform, docs, and skill. In this dogfooding version everything is stored locally. To share feedback, send your log to Terry (see [`dogfooding/`](dogfooding/)).
 
 ## Telemetry
 
-Local-only and anonymous. One event per run (which reference, success or error, duration), with no prompts, code, or keys. Nothing is transmitted today. Opt out with `touch ~/.fireworks-skill/telemetry-off`. Details in [`TELEMETRY.md`](TELEMETRY.md); dogfooding and tests in [`dogfooding/`](dogfooding/).
+Local-only and anonymous. One event per run (which reference, success or error, duration), with no prompts, code, or keys. In this dogfooding version nothing is transmitted; to share feedback, send your local log to Terry (the export one-liner is in [`dogfooding/`](dogfooding/)). Opt out with `touch ~/.fireworks-skill/telemetry-off`. Details in [`TELEMETRY.md`](TELEMETRY.md).
 
 ## Status
 
