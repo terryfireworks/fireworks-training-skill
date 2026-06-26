@@ -1,27 +1,30 @@
 # fireworks-training
 
-An agent skill that teaches a coding agent (Claude Code, Cursor, Codex, …) to build correctly on the **Fireworks training product** — choosing a method, preparing data, launching jobs, custom training loops, picking shapes/models, cost, and deploying + troubleshooting — **without needing to ask a human**. Built from public Fireworks docs.
+> An agent skill that teaches any coding agent to build correctly on the **Fireworks training product** — straight from the live docs, so it handles real fine-tuning work end-to-end **without needing to ask a human**.
+
+Built from public Fireworks docs. Covers method choice (SFT/DPO/RFT), dataset prep, launching jobs via `firectl`, custom training loops (Training API), picking shapes/models, cost, and deploying + troubleshooting.
+
+## What you get
+
+- **Works in your agent harness, with full context.** Drop it into Claude Code, Cursor, Codex, or any skills-compatible agent. It auto-attaches the moment a training task comes up and routes to exactly the right depth — broad enough to cover the whole workflow, specific enough to write correct code. The agent gets the context it needs without you pasting docs.
+- **Always up to date & synced.** References are *link-first* — they point at the live `.md` docs, so the agent reads current values (shapes, prices, context limits), never a stale snapshot. A drift check flags when Fireworks adds or removes fine-tuning pages, and the plugin **auto-updates from this repo**, so everyone stays on the latest guidance.
+- **Self-improving.** It captures an anonymous signal of what helps and where people get stuck — which docs they need, what errors they hit, where the skill had to stop and ask. Today that stays **local on each machine**; it's built to roll up to Fireworks (opt-in) so the docs *and* the skill keep improving from real usage. See [Telemetry](#telemetry).
 
 ## Install
 
-Pick one. The skill auto-attaches (by its `description`) whenever a Fireworks training task comes up.
+Pick one — the skill auto-attaches by its `description` whenever a Fireworks training task comes up.
 
 **A) Claude Code plugin — stays current automatically (recommended)**
-
 ```text
 /plugin marketplace add terryfireworks/fireworks-training-skill
 /plugin install fireworks@fireworks-skills
 ```
+Then enable auto-update once: `/plugin` → **Marketplaces** → **Auto-update** on `fireworks-skills`. New commits are pulled at startup after that. (Self-hosted marketplaces are opt-in per user; an org can force it via `managed-settings.json`.)
 
-Then turn on auto-update once: `/plugin` → **Marketplaces** → enable **Auto-update** for `fireworks-skills`. After that, new commits are pulled at startup — no manual updates. (Auto-update is opt-in for self-hosted marketplaces; an org can force it via `managed-settings.json`.)
-
-**B) Cross-agent (Cursor, Codex, …) — one-line, manual updates**
-
+**B) Cross-agent (Cursor, Codex, …) — one line, manual updates**
 ```bash
-npx skills add terryfireworks/fireworks-training-skill
+npx skills add terryfireworks/fireworks-training-skill   # update: npx skills update -y
 ```
-
-Update with `npx skills update -y` (no auto-update in the `skills` CLI). Ships `SKILL.md` + `references/`.
 
 <details>
 <summary>C) Dogfooding / contributing — live edits, no reinstall</summary>
@@ -30,51 +33,24 @@ Update with `npx skills update -y` (no auto-update in the `skills` CLI). Ships `
 git clone https://github.com/terryfireworks/fireworks-training-skill.git ~/Desktop/fireworks-training-skill
 ln -s ~/Desktop/fireworks-training-skill/skills/fireworks-training ~/.claude/skills/fireworks-training
 ```
-
 Edits to `SKILL.md` take effect immediately. Dogfooding tooling (report + tests) lives in [`dogfooding/`](dogfooding/).
 </details>
 
 ## How it works (progressive disclosure)
 
-- **`SKILL.md`** — always-loaded router: auto-attaches via its `description`, routes each task to the right reference, and carries the critical "always/never" rules. Small context footprint.
+- **`SKILL.md`** — always-loaded router: auto-attaches, routes each task to the right reference, carries the critical "always/never" rules. Small context footprint.
 - **`references/`** — loaded only when the router points there: `getting-started`, `choose-method`, `training-api`, `models-shapes-and-cost`, `deploy-and-troubleshoot`.
-- For anything not covered, the skill points the agent at the full machine-readable doc index (`docs.fireworks.ai/llms.txt`).
-
-So the agent reads the description at startup, loads `SKILL.md` when a training task matches, then triages into exactly the doc it needs.
+- Anything not covered → the agent is pointed at the full machine-readable doc index (`docs.fireworks.ai/llms.txt`).
 
 ## Staying current
 
-References are **link-first** (they link the live `.md` docs, so the agent reads current content). `scripts/sync_check.py` diffs `docs.fireworks.ai/llms.txt` against a committed baseline and flags new/removed fine-tuning pages, so the skill doesn't silently drift.
+References link the live docs, so content is always fresh. `scripts/sync_check.py` diffs `docs.fireworks.ai/llms.txt` against a committed baseline and flags new/removed fine-tuning pages in CI, so the skill never silently drifts.
 
-## Usage telemetry (local-only)
+## Telemetry
 
-**Why.** This skill runs on machines we don't control and we never see the transcripts — so without a signal we're blind to what trips people up building on Fireworks training. This adds that signal, while keeping all data **on the user's machine**.
+Local-only, anonymous, on by default. Two tiny bash hooks in `SKILL.md` append one event per run to `~/.fireworks-skill/analytics/events.jsonl` — **which reference was used, success/error + error class, duration, and any stop-and-ask** (including whether the agent's recommendation was taken). It captures **no prompts, code, file paths, or keys** — there are no free-text fields to leak.
 
-**How — two hooks the agent runs around each task.** Both are plain bash embedded directly in `SKILL.md` (the skills CLI installs only `SKILL.md`, so nothing external is required). Both are best-effort: on a non-bash host they're skipped silently and never affect the task.
-
-- **Prolog** (runs first) — stamps the start: writes a start-time file and an "in-flight" marker, both keyed by `$PPID` (the agent process, which is stable across the separate tool calls a run makes). The marker is what lets us detect a run that later dies.
-- **Epilog** (runs last) — closes the run: works out the duration, appends **one** event line (which reference was used, success/error, error class, how long), clears this run's marker, and finalizes any *other* leftover marker as a crashed run (`outcome: unknown`).
-
-**Where the data lives right now.** Everything is local — **nothing is transmitted anywhere.**
-
-```
-~/.fireworks-skill/analytics/
-├── events.jsonl        ← the log (one JSON object per run)
-├── .start-<pid>        ← transient: run start time (removed by the epilog)
-└── .pending-<pid>      ← transient: in-flight marker for crash detection
-```
-
-Each event captures **no prompts, code, file paths, or keys** — only enum-ish fields (there are no free-text fields to leak). Three signals come out of it:
-
-- **Usage** — `reference_used`: which docs people actually need.
-- **Blockers** — `outcome` + `error_class` (quota, auth, dataset_format, deploy, numerics): where people get stuck.
-- **Friction** — `question_id` + `followed_recommendation`: where the skill had to stop and ask, and whether its recommendation was right.
-
-**Controls.** On by default (local-only). Opt out anytime: `touch ~/.fireworks-skill/telemetry-off` or `export FW_TELEMETRY=off`.
-
-**Dogfooding & feedback.** Install instructions for dogfooders, the one-liner to send feedback, the maintainer aggregate report, and the test suite all live in [`dogfooding/`](dogfooding/).
-
-**Outcomes & what's next.** A concrete readout of where people succeed vs. stall — which feeds (1) a better skill (fix the references/routing people fail on) and (2) a real-world map of the training product's rough edges. During dogfooding it stays local; `events.jsonl` is the stable interface, so a collector can be added later without touching the skill. Before any data leaves a machine, the default flips from opt-out to opt-in. Full design + privacy: [`TELEMETRY.md`](TELEMETRY.md).
+Today **nothing is transmitted**; the data is the signal behind "self-improving" above, and `events.jsonl` is the stable interface for a future opt-in collector that rolls it up to Fireworks. Opt out anytime: `touch ~/.fireworks-skill/telemetry-off` or `export FW_TELEMETRY=off`. Full design + privacy in [`TELEMETRY.md`](TELEMETRY.md); dogfooding + tests in [`dogfooding/`](dogfooding/).
 
 ## Status
 
