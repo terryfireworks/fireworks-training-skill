@@ -14,15 +14,18 @@ Read-only against the network (no API key). The skill deliberately references a
 *subset* of pages and links the live `.md` for specifics, so this checks for
 *new/removed* pages to review — not 1:1 coverage.
 """
+import os
 import sys
 import re
 import urllib.request
 from pathlib import Path
 
-LLMS_TXT = "https://docs.fireworks.ai/llms.txt"
+# Env overrides exist for testing (point at a local fixture / temp baseline).
+LLMS_TXT = os.environ.get("FW_LLMS_TXT", "https://docs.fireworks.ai/llms.txt")
 # Pages whose path matches these are "in scope" for the training skill.
 IN_SCOPE = ("/fine-tuning/", "/fine-tuning.")
-BASELINE = Path(__file__).with_name("known_pages.txt")
+_bl = os.environ.get("FW_BASELINE")
+BASELINE = Path(_bl) if _bl else Path(__file__).with_name("known_pages.txt")
 
 
 def fetch_scope_pages() -> set[str]:

@@ -31,7 +31,7 @@ git clone https://github.com/terryfireworks/fireworks-training-skill.git ~/Deskt
 ln -s ~/Desktop/fireworks-training-skill/skills/fireworks-training ~/.claude/skills/fireworks-training
 ```
 
-Edits to `SKILL.md` take effect immediately. The maintainer report tool lives at `scripts/fw_telemetry_report.sh` in the repo.
+Edits to `SKILL.md` take effect immediately. Dogfooding tooling (report + tests) lives in [`dogfooding/`](dogfooding/).
 </details>
 
 ## How it works (progressive disclosure)
@@ -70,22 +70,9 @@ Each event captures **no prompts, code, file paths, or keys** — only enum-ish 
 - **Blockers** — `outcome` + `error_class` (quota, auth, dataset_format, deploy, numerics): where people get stuck.
 - **Friction** — `question_id` + `followed_recommendation`: where the skill had to stop and ask, and whether its recommendation was right.
 
-**Controls.** On by default (local-only). Opt out anytime: `touch ~/.fireworks-skill/telemetry-off` or `export FW_TELEMETRY=off`. View the log with `scripts/fw_telemetry_report.sh` (from the repo).
+**Controls.** On by default (local-only). Opt out anytime: `touch ~/.fireworks-skill/telemetry-off` or `export FW_TELEMETRY=off`.
 
-**Sending feedback (dogfooders).** Since the log is local-only, there's no auto-collection yet. To share your usage data, run this one-liner and send the file it saves to your Desktop:
-
-```bash
-cp ~/.fireworks-skill/analytics/events.jsonl ~/Desktop/fw-feedback-$(whoami)-$(date +%Y%m%d).jsonl 2>/dev/null \
-  && echo "Saved to your Desktop — send me that file" || echo "No feedback yet — use the skill first"
-```
-
-It contains only anonymous enum-ish fields (no prompts/code/keys) — same data described above.
-
-**Reviewing collected feedback (maintainer).** Drop everyone's files in one folder and report across all of them:
-
-```bash
-scripts/fw_telemetry_report.sh ~/Desktop/dogfood-feedback/   # a folder of collected *.jsonl files
-```
+**Dogfooding & feedback.** Install instructions for dogfooders, the one-liner to send feedback, the maintainer aggregate report, and the test suite all live in [`dogfooding/`](dogfooding/).
 
 **Outcomes & what's next.** A concrete readout of where people succeed vs. stall — which feeds (1) a better skill (fix the references/routing people fail on) and (2) a real-world map of the training product's rough edges. During dogfooding it stays local; `events.jsonl` is the stable interface, so a collector can be added later without touching the skill. Before any data leaves a machine, the default flips from opt-out to opt-in. Full design + privacy: [`TELEMETRY.md`](TELEMETRY.md).
 

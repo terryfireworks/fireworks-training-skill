@@ -1,0 +1,27 @@
+{"id":"R1","tier":"routing","prompt":"How do I install firectl and run my first fine-tune?","expect_reference":"getting-started","pass":"routes to getting-started"}
+{"id":"R2","tier":"routing","prompt":"Should I use SFT, DPO, or RFT for my data?","expect_reference":"choose-method","pass":"routes to choose-method"}
+{"id":"R3","tier":"routing","prompt":"I need a custom RL loss with rollouts in the training loop.","expect_reference":"training-api","pass":"routes to training-api"}
+{"id":"R4","tier":"routing","prompt":"Which training shape and GPU should I use, and what will it cost?","expect_reference":"models-shapes-and-cost","pass":"routes to models-shapes-and-cost"}
+{"id":"R5","tier":"routing","prompt":"My deployed fine-tuned model returns base behavior. How do I fix it?","expect_reference":"deploy-and-troubleshoot","pass":"routes to deploy-and-troubleshoot"}
+{"id":"R6","tier":"routing","prompt":"Fine-tune Llama on 2k support transcripts and launch it.","expect_reference":["choose-method","getting-started"],"pass":"multi-hop: method then launch"}
+{"id":"R7","tier":"routing","prompt":"Can I fine-tune an embedding model on Fireworks?","expect_reference":"llms.txt-fallback-or-out-of-scope","pass":"uses llms.txt fallback or says out of scope; no guessing"}
+{"id":"A1","tier":"autonomy","prompt":"I have ~2,000 labeled support transcripts and want the model to match our tone.","pass":"recommends SFT (not DPO — not preference pairs); LoRA + defaults"}
+{"id":"A2","tier":"autonomy","prompt":"I have ~300 prompts and a grader that scores outputs 0-1, but no gold answers.","pass":"recommends RFT; ~200-500 prompts; notes RFT free under 16B"}
+{"id":"A3","tier":"autonomy","prompt":"My data is pairs where response A is better than B.","pass":"recommends DPO; one-turn only; preferred/non_preferred format"}
+{"id":"A4","tier":"autonomy","prompt":"My fine-tune finished — how do I deploy the LoRA?","pass":"on-demand only (not serverless); live-merge vs multi-LoRA; reminds to tear down"}
+{"id":"A5","tier":"autonomy","prompt":"My fine-tuning bill is higher than expected.","pass":"SFT/DPO per training token vs deployments per GPU-hour; scale_to_zero/delete idle deployments"}
+{"id":"C1","tier":"critical-rules","prompt":"What settings should I start a fine-tune with?","pass":"defaults to SFT + LoRA (rank 8) + 1 epoch; change one thing at a time"}
+{"id":"C2","tier":"critical-rules","prompt":"I deployed my model and I'm done testing for today.","pass":"tells user to delete or scale_to_zero (on-demand bills per GPU-second idle)"}
+{"id":"C3","tier":"critical-rules","prompt":"How should I authenticate my automation to launch jobs?","pass":"recommends scoped/service-account key, never personal admin key; never commit keys"}
+{"id":"C4","tier":"critical-rules","prompt":"I have a CSV of examples — can I upload it for SFT?","pass":"requires JSONL with messages, one object/line, min 3; validate format before upload"}
+{"id":"C5","tier":"critical-rules","prompt":"My RL reward signal looks noisy on an MoE model.","pass":"raises numerics alignment + MoE Router Replay (R3) before trusting RL signal"}
+{"id":"D1","tier":"defer-to-live","prompt":"What is the exact price per 1M tokens to SFT Llama-70B?","pass":"fetches live pricing page; does NOT quote a hardcoded number"}
+{"id":"D2","tier":"defer-to-live","prompt":"What is the maximum context length for Qwen3.5?","pass":"fetches live shapes/context table; does not assume a stale cap"}
+{"id":"D3","tier":"defer-to-live","prompt":"List the base models I can currently fine-tune.","pass":"fetches live tunable-models registry; does not rely on the example list"}
+{"id":"D4","tier":"defer-to-live","prompt":"What is the training shape ID for model X?","pass":"fetches live catalog; uses the full shape path"}
+{"id":"E1","tier":"escalation","prompt":"I want to write a custom Python training loop with the Training API.","pass":"notes Training API is private preview; routes to request access (contact-training)"}
+{"id":"E2","tier":"escalation","prompt":"My job failed with insufficient GPU quota.","pass":"explains quota is a GPU ceiling; raise quota or pick smaller model; not a bug"}
+{"id":"E3","tier":"escalation","prompt":"My account is suspended even though I have credits.","pass":"identifies billing-side (distinct from quota); points to Billing"}
+{"id":"E4","tier":"escalation","prompt":"<a genuinely undocumented/novel training ask>","pass":"admits not covered; points to llms.txt/support; does not fabricate"}
+{"id":"S2","tier":"safety","prompt":"Can I serve my fine-tuned LoRA on serverless?","pass":"no — fine-tuned LoRA is on-demand only; does not claim serverless works"}
+{"id":"S4","tier":"safety","prompt":"My job won't start — is this a Fireworks bug?","pass":"distinguishes quota (GPU ceiling) vs billing (suspension) before assuming a bug"}

@@ -93,4 +93,4 @@ printf '{"v":1,"ts":"%s","event_type":"question","skill":"fireworks-training","o
   >> ~/.fireworks-skill/analytics/events.jsonl 2>/dev/null || true
 ```
 
-Data is local-only. Maintainers: view it with `scripts/fw_telemetry_report.sh` from the repo. See `TELEMETRY.md`.
+Data is local-only. Maintainers: view it with `dogfooding/report.sh` from the repo. See `TELEMETRY.md`.

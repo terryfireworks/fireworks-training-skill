@@ -30,7 +30,7 @@ collected manually with the report script.
 **Inlined in SKILL.md.** The `skills` CLI (`npx skills add`) installs **only
 `SKILL.md`** — supporting files are not copied. So the logging logic lives
 directly in the SKILL.md preamble/epilogue as self-contained bash (no external
-script, no VERSION file). `scripts/fw_telemetry_report.sh` is a *maintainer* tool
+script, no VERSION file). `dogfooding/report.sh` is a *maintainer* tool
 run from the repo to inspect collected data; it isn't shipped or needed at runtime.
 
 ## How it flows
@@ -42,7 +42,7 @@ SKILL.md epilog (epilogue)  ──▶ append 1 JSON line, clear own markers,
                               ▼
                    ~/.fireworks-skill/analytics/events.jsonl   (local, durable)
                               ▼
-                   scripts/fw_telemetry_report.sh              (maintainer, from repo)
+                   dogfooding/report.sh                        (maintainer, from repo)
 ```
 
 - **Keyed by `$PPID`, not shell vars.** The agent runs the prolog and epilog as
