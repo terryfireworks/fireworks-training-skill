@@ -1,0 +1,11 @@
+{
+  "name": "fireworks-skills",
+  "owner": { "name": "terryfireworks" },
+  "plugins": [
+    {
+      "name": "fireworks",
+      "source": ".",
+      "description": "Fireworks training skill — bundles the fireworks-training skill (SKILL.md + references). Auto-attaches on any Fireworks fine-tuning/training task."
+    }
+  ]
+}

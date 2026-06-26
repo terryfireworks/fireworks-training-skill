@@ -4,25 +4,34 @@ An agent skill that teaches a coding agent (Claude Code, Cursor, Codex, …) to 
 
 ## Install
 
-One line, into any skills-compatible agent (Claude Code, Cursor, Codex, …):
+Pick one. The skill auto-attaches (by its `description`) whenever a Fireworks training task comes up.
+
+**A) Claude Code plugin — stays current automatically (recommended)**
+
+```text
+/plugin marketplace add terryfireworks/fireworks-training-skill
+/plugin install fireworks@fireworks-skills
+```
+
+Then turn on auto-update once: `/plugin` → **Marketplaces** → enable **Auto-update** for `fireworks-skills`. After that, new commits are pulled at startup — no manual updates. (Auto-update is opt-in for self-hosted marketplaces; an org can force it via `managed-settings.json`.)
+
+**B) Cross-agent (Cursor, Codex, …) — one-line, manual updates**
 
 ```bash
 npx skills add terryfireworks/fireworks-training-skill
 ```
 
-Update later with `npx skills update -y`. That's it — the skill auto-attaches when a training task comes up.
+Update with `npx skills update -y` (no auto-update in the `skills` CLI). Ships `SKILL.md` + `references/`.
 
 <details>
-<summary>Dogfooding / contributing (live, full repo)</summary>
-
-To get the full local `references/`, the maintainer report tool, and **live edits** (no reinstall on every change), clone and symlink the repo as the skill:
+<summary>C) Dogfooding / contributing — live edits, no reinstall</summary>
 
 ```bash
 git clone https://github.com/terryfireworks/fireworks-training-skill.git ~/Desktop/fireworks-training-skill
-ln -s ~/Desktop/fireworks-training-skill ~/.claude/skills/fireworks-training
+ln -s ~/Desktop/fireworks-training-skill/skills/fireworks-training ~/.claude/skills/fireworks-training
 ```
 
-Now edits to `SKILL.md` take effect immediately.
+Edits to `SKILL.md` take effect immediately. The maintainer report tool lives at `scripts/fw_telemetry_report.sh` in the repo.
 </details>
 
 ## How it works (progressive disclosure)

@@ -1,0 +1,11 @@
+{
+  "name": "fireworks",
+  "displayName": "Fireworks Training",
+  "description": "Teaches a coding agent to build correctly on the Fireworks training product — method choice (SFT/DPO/RFT), dataset prep, launching jobs, shapes/models/cost, deploy + troubleshoot.",
+  "version": "0.1.0",
+  "author": { "name": "terryfireworks" },
+  "homepage": "https://github.com/terryfireworks/fireworks-training-skill",
+  "repository": "https://github.com/terryfireworks/fireworks-training-skill",
+  "license": "MIT",
+  "keywords": ["fireworks", "fine-tuning", "training", "sft", "dpo", "rft"]
+}
