@@ -9,15 +9,21 @@ training — without ever seeing their code, and without standing up any backend
 backend collector can be added later (see "Future" below); until then, data is
 collected manually with the report script.
 
+**Inlined in SKILL.md.** The `skills` CLI (`npx skills add`) installs **only
+`SKILL.md`** — supporting files are not copied. So the logging logic lives
+directly in the SKILL.md preamble/epilogue as self-contained bash (no external
+script, no VERSION file). `scripts/fw_telemetry_report.sh` is a *maintainer* tool
+run from the repo to inspect collected data; it isn't shipped or needed at runtime.
+
 ## How it flows
 
 ```
 SKILL.md preamble  ──▶ .pending-<session> marker        (crash detector)
-SKILL.md epilogue  ──▶ scripts/fw_telemetry.sh          (append 1 JSON line)
+SKILL.md epilogue  ──▶ inline bash: append 1 JSON line
                               ▼
                    ~/.fireworks-skill/analytics/events.jsonl   (local, durable)
                               ▼
-                   scripts/fw_telemetry_report.sh        (summarize on demand)
+                   scripts/fw_telemetry_report.sh        (maintainer, from repo)
 ```
 
 - **Non-blocking.** The skill only appends one line. Telemetry can never break a

@@ -58,20 +58,36 @@ Latest + machine-readable: https://docs.fireworks.ai/fine-tuning/finetuning-intr
 
 ## Telemetry epilogue (run last, best-effort)
 
-At the end of the task, log one event. Set `OUTCOME` to `success`/`error`/`abort`, `REF` to the main `references/*.md` you used (or `none`), and `ERR` to a short error class only on failure (`quota`/`auth`/`dataset_format`/`deploy`/`numerics`/`other`). Skip silently if unavailable:
+At the end of the task, append one local event. **Edit the three variables on the first line**: `REF` = the main `references/*.md` you used (or `none`); `OUTCOME` = `success`/`error`/`abort`; `ERR` = a short error class on failure only (`quota`/`auth`/`dataset_format`/`deploy`/`numerics`/`other`), else empty. Self-contained — skip silently on a non-bash host:
 
 ```bash
-S="$HOME/.claude/skills/fireworks-training/scripts"; [ -d "$S" ] || S="$(pwd)/scripts"
-[ -x "$S/fw_telemetry.sh" ] && "$S/fw_telemetry.sh" \
-  --outcome "OUTCOME" --reference "REF" --error-class "ERR" \
-  --duration "$(( $(date +%s) - ${FW_T0:-$(date +%s)} ))" --session-id "${FW_SID:-none}" 2>/dev/null || true
+REF="none"; OUTCOME="success"; ERR=""   # ← edit these three
+D=~/.fireworks-skill/analytics
+if [ "${FW_TELEMETRY:-on}" != off ] && [ ! -f ~/.fireworks-skill/telemetry-off ]; then
+  mkdir -p "$D"; TS=$(date -u +%Y-%m-%dT%H:%M:%SZ); OS=$(uname -s|tr 'A-Z' 'a-z'); VER=0.1.0
+  # finalize any crashed prior runs (orphaned markers → outcome:unknown)
+  for f in "$D"/.pending-*; do
+    [ -f "$f" ] || continue; sid=$(basename "$f"); sid=${sid#.pending-}
+    [ "$sid" = "${FW_SID:-}" ] && continue
+    pts=$(grep -o '"ts":"[^"]*"' "$f" 2>/dev/null|head -1|cut -d'"' -f4)
+    printf '{"v":1,"ts":"%s","event_type":"skill_run","skill":"fireworks-training","skill_version":"%s","os":"%s","session_id":"%s","reference_used":"none","outcome":"unknown","error_class":null,"duration_s":null,"question_id":null,"followed_recommendation":null}\n' "$pts" "$VER" "$OS" "$sid" >> "$D/events.jsonl" 2>/dev/null
+    rm -f "$f" 2>/dev/null
+  done
+  rm -f "$D/.pending-${FW_SID:-none}" 2>/dev/null
+  ejson=null; [ -n "$ERR" ] && ejson="\"$ERR\""
+  printf '{"v":1,"ts":"%s","event_type":"skill_run","skill":"fireworks-training","skill_version":"%s","os":"%s","session_id":"%s","reference_used":"%s","outcome":"%s","error_class":%s,"duration_s":%s,"question_id":null,"followed_recommendation":null}\n' \
+    "$TS" "$VER" "$OS" "${FW_SID:-none}" "$REF" "$OUTCOME" "$ejson" "$(( $(date +%s) - ${FW_T0:-$(date +%s)} ))" >> "$D/events.jsonl" 2>/dev/null
+fi
 ```
 
-If you had to stop and ask the user a routing decision, also log the friction (use a stable `question_id`, and whether they took your recommended option):
+If you had to stop and ask the user a routing decision, also append a friction event (`QID` = a stable id for the question; `FOLLOWED` = `true`/`false` for whether they took your recommendation):
 
 ```bash
-[ -x "$S/fw_telemetry.sh" ] && "$S/fw_telemetry.sh" --event-type question \
-  --question-id "QID" --followed-recommendation "true|false" --session-id "${FW_SID:-none}" 2>/dev/null || true
+QID="route-method"; FOLLOWED=true   # ← edit these two
+[ "${FW_TELEMETRY:-on}" != off ] && [ ! -f ~/.fireworks-skill/telemetry-off ] && \
+printf '{"v":1,"ts":"%s","event_type":"question","skill":"fireworks-training","os":"%s","session_id":"%s","reference_used":"none","outcome":"unknown","error_class":null,"duration_s":null,"question_id":"%s","followed_recommendation":%s}\n' \
+  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(uname -s|tr 'A-Z' 'a-z')" "${FW_SID:-none}" "$QID" "$FOLLOWED" \
+  >> ~/.fireworks-skill/analytics/events.jsonl 2>/dev/null || true
 ```
 
-Data stays on the machine; run `scripts/fw_telemetry_report.sh` to view it. See `TELEMETRY.md` for the design and privacy model.
+Data is local-only. Maintainers: view it with `scripts/fw_telemetry_report.sh` from the repo. See `TELEMETRY.md`.
