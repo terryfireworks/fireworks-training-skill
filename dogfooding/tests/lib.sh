@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared helpers for the deterministic test suite (tiers 7–8).
+# Shared helpers for the automatic dogfooding-case checks.
 set -uo pipefail
 
 LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

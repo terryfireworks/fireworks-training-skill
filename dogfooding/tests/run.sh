@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Deterministic test suite (tiers 7–8) for the fireworks-training skill.
-# No agent / network required. CI-friendly: exits non-zero on any failure.
+# Auto-checked dogfooding cases for the fireworks-training skill.
+# No agent / network needed. CI-friendly: exits non-zero on any failure.
 cd "$(dirname "$0")"
 fail=0
 for t in test_sync_check.sh test_telemetry.sh; do
-  echo "════ $t ════"
+  echo "──────────────────────────────────────────"
   bash "$t" || fail=1
   echo
 done
-if [ "$fail" -eq 0 ]; then echo "✓ ALL DETERMINISTIC TESTS PASSED"; else echo "✗ SOME TESTS FAILED"; fi
+if [ "$fail" -eq 0 ]; then echo "✓ all automatic dogfooding cases passed"; else echo "✗ some cases failed"; fi
 exit "$fail"

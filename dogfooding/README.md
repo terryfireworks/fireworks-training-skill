@@ -38,20 +38,16 @@ dogfooding/report.sh                               # or just this machine's log
 Shows outcomes, which references people needed, blockers (error classes), and
 interaction friction.
 
-## Tests
+## Cases
 
-Two layers (see [`tests/`](tests/)):
+All the cases we check the skill against — in plain English — are in
+[`cases.md`](cases.md). Two kinds:
 
-- **Deterministic (tiers 7–8)** — run today, no agent/network:
+- **Automatic** — verify the plumbing (telemetry + doc-sync). Run today, no agent:
   ```bash
   dogfooding/tests/run.sh
   ```
-  - `test_sync_check.sh` — doc-drift detection (added/removed pages, format change)
-  - `test_telemetry.sh` — the inline prolog/epilog: events, crash detector, opt-out, valid JSON
-- **Behavior evals (tiers 1–6)** — [`tests/evals/`](tests/evals/): routing, autonomy,
-  critical-rules, defer-to-live, escalation, safety. Test set is written; needs an
-  agent + judge harness to run (scaffold).
-
-What each tier proves, mapped to the goals: routing/autonomy = "99% no human";
-defer-to-live + `sync_check` = "stay in sync with the docs"; escalation = the 1%
-boundary; telemetry = the dogfooding signal stays trustworthy.
+- **By hand** — try them on the skill and confirm it answers right (opens the right
+  guide, solves without a human, stays current, knows when to escalate). Also stored
+  machine-readably in [`tests/behavior-cases.jsonl`](tests/behavior-cases.jsonl) for a
+  future auto-judge.

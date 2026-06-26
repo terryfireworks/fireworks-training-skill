@@ -1,0 +1,27 @@
+{"id":"open-getting-started","group":"opens the right guide","prompt":"How do I install firectl and run my first fine-tune?","good":"opens getting-started"}
+{"id":"open-choose-method","group":"opens the right guide","prompt":"Should I use SFT, DPO, or RFT for my data?","good":"opens choose-method"}
+{"id":"open-training-api","group":"opens the right guide","prompt":"I need a custom RL loss with rollouts in the training loop.","good":"opens training-api"}
+{"id":"open-shapes-cost","group":"opens the right guide","prompt":"Which training shape and GPU should I use, and what will it cost?","good":"opens models-shapes-and-cost"}
+{"id":"open-deploy","group":"opens the right guide","prompt":"My deployed fine-tuned model returns base behavior. How do I fix it?","good":"opens deploy-and-troubleshoot"}
+{"id":"open-multi","group":"opens the right guide","prompt":"Fine-tune Llama on 2k support transcripts and launch it.","good":"opens choose-method then getting-started"}
+{"id":"open-out-of-scope","group":"opens the right guide","prompt":"Can I fine-tune an embedding model on Fireworks?","good":"falls back to the live docs index or says it's out of scope; does not guess"}
+{"id":"answer-sft","group":"answers it without a human","prompt":"I have ~2,000 labeled support transcripts and want the model to match our tone.","good":"recommends SFT (not DPO — not preference pairs); LoRA + defaults"}
+{"id":"answer-rft","group":"answers it without a human","prompt":"I have ~300 prompts and a grader that scores outputs 0-1, but no gold answers.","good":"recommends RFT; ~200-500 prompts; notes RFT is free under 16B"}
+{"id":"answer-dpo","group":"answers it without a human","prompt":"My data is pairs where response A is better than B.","good":"recommends DPO; one-turn only; preferred/non_preferred format"}
+{"id":"answer-deploy","group":"answers it without a human","prompt":"My fine-tune finished — how do I deploy the LoRA?","good":"on-demand only (not serverless); live-merge vs multi-LoRA; reminds to tear down"}
+{"id":"answer-cost","group":"answers it without a human","prompt":"My fine-tuning bill is higher than expected.","good":"SFT/DPO per training token vs deployments per GPU-hour; scale_to_zero/delete idle deployments"}
+{"id":"rule-defaults","group":"follows the always/never rules","prompt":"What settings should I start a fine-tune with?","good":"defaults to SFT + LoRA (rank 8) + 1 epoch; change one thing at a time"}
+{"id":"rule-teardown","group":"follows the always/never rules","prompt":"I deployed my model and I'm done testing for today.","good":"tells user to delete or scale_to_zero (on-demand bills per GPU-second idle)"}
+{"id":"rule-keys","group":"follows the always/never rules","prompt":"How should I authenticate my automation to launch jobs?","good":"recommends scoped/service-account key, never personal admin key; never commit keys"}
+{"id":"rule-dataset","group":"follows the always/never rules","prompt":"I have a CSV of examples — can I upload it for SFT?","good":"requires JSONL with messages, one object/line, min 3; validate before upload"}
+{"id":"rule-numerics","group":"follows the always/never rules","prompt":"My RL reward signal looks noisy on an MoE model.","good":"raises numerics alignment + MoE Router Replay (R3) before trusting the signal"}
+{"id":"current-price","group":"stays current (no made-up numbers)","prompt":"What is the exact price per 1M tokens to SFT Llama-70B?","good":"looks it up on the live pricing page; does not quote a hardcoded number"}
+{"id":"current-context","group":"stays current (no made-up numbers)","prompt":"What is the maximum context length for Qwen3.5?","good":"looks it up in the live shapes/context table; does not assume a stale cap"}
+{"id":"current-models","group":"stays current (no made-up numbers)","prompt":"List the base models I can currently fine-tune.","good":"looks up the live tunable-models registry; does not rely on the example list"}
+{"id":"current-shape","group":"stays current (no made-up numbers)","prompt":"What is the training shape ID for model X?","good":"looks it up in the live catalog; uses the full shape path"}
+{"id":"human-preview","group":"knows when to get a human (the ~1%)","prompt":"I want to write a custom Python training loop with the Training API.","good":"notes Training API is private preview; points to request access"}
+{"id":"human-quota","group":"knows when to get a human (the ~1%)","prompt":"My job failed with insufficient GPU quota.","good":"explains quota is a GPU ceiling; raise quota or pick smaller model; not a bug"}
+{"id":"human-billing","group":"knows when to get a human (the ~1%)","prompt":"My account is suspended even though I have credits.","good":"identifies billing-side (distinct from quota); points to Billing"}
+{"id":"human-unknown","group":"knows when to get a human (the ~1%)","prompt":"<a genuinely undocumented/novel training ask>","good":"admits it's not covered; points to the live docs index/support; does not fabricate"}
+{"id":"safe-serverless","group":"doesn't give bad advice","prompt":"Can I serve my fine-tuned LoRA on serverless?","good":"no — fine-tuned LoRA is on-demand only; does not claim serverless works"}
+{"id":"safe-quota-vs-bug","group":"doesn't give bad advice","prompt":"My job won't start — is this a Fireworks bug?","good":"checks quota (GPU ceiling) vs billing (suspension) before assuming a bug"}
