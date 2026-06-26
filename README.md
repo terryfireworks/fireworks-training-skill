@@ -7,10 +7,10 @@ Covers method choice (SFT/DPO/RFT), dataset prep, launching jobs, custom trainin
 ## Install
 
 ```bash
-npx skills add terryfireworks/fireworks-training-skill
+npx skills add -g terryfireworks/fireworks-training-skill
 ```
 
-That's it. It works in Claude Code, Cursor, Codex, and any skills-compatible agent, and auto-attaches whenever a Fireworks training question comes up.
+That's it. The `-g` installs it globally, so it works in every project across Claude Code, Cursor, Codex, and any skills-compatible agent, and auto-attaches whenever a Fireworks training question comes up. (Drop `-g` to install only in the current folder.)
 
 **Want auto-updates (Claude Code)?** Install it as a plugin instead:
 ```text
