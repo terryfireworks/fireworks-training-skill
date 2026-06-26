@@ -22,11 +22,7 @@ That's it. The `-g` installs it globally, so it works in every project across Cl
 
 - **Runs everywhere, with full context.** One skill, every agent harness (Claude Code, Cursor, Codex, and any skills-compatible agent). It auto-attaches on any Fireworks training task and gives the agent the full context for the whole workflow, so it stays versatile from data prep to deploy.
 - **Auto-retrieves docs, always in sync.** Via progressive disclosure the agent fetches the right docs itself. It loads a small router, opens only the reference a task needs, and pulls live pages from `docs.fireworks.ai`. Because it reads the live docs, it stays current with shapes, prices, and limits, and the plugin auto-updates from this repo. You never hunt for or paste documentation.
-- **Self-improving.** Captures an anonymous signal of what helps and where people get stuck, so recurring issues can be reported back to Fireworks to improve the platform, docs, and skill. In this dogfooding version everything is stored locally. To share feedback, send your log to Terry (see [`dogfooding/`](dogfooding/)).
-
-## Telemetry
-
-Local-only and anonymous. One event per run (which reference, success or error, duration), with no prompts, code, or keys. In this dogfooding version nothing is transmitted; to share feedback, send your local log to Terry (the export one-liner is in [`dogfooding/`](dogfooding/)). Opt out with `touch ~/.fireworks-skill/telemetry-off`. Details in [`TELEMETRY.md`](TELEMETRY.md).
+- **Self-improving, expert support.** It answers like a Fireworks expert, and captures an anonymous signal of what helps and where people get stuck so recurring issues can be reported back to Fireworks to improve the platform, docs, and skill. The signal is anonymous (one event per run: which reference, success or error, duration) with no prompts, code, or keys. In this dogfooding version everything stays local; to share feedback, send your log to Terry (export one-liner in [`dogfooding/`](dogfooding/)). Opt out with `touch ~/.fireworks-skill/telemetry-off`; details in [`TELEMETRY.md`](TELEMETRY.md).
 
 ## Status
 
