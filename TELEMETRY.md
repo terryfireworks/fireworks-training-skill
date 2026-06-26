@@ -36,19 +36,26 @@ run from the repo to inspect collected data; it isn't shipped or needed at runti
 ## How it flows
 
 ```
-SKILL.md preamble  ──▶ .pending-<session> marker        (crash detector)
-SKILL.md epilogue  ──▶ inline bash: append 1 JSON line
+SKILL.md prolog (preamble)  ──▶ .start-<pid> + .pending-<pid>   (start time + in-flight marker)
+SKILL.md epilog (epilogue)  ──▶ append 1 JSON line, clear own markers,
+                                finalize any OTHER marker as outcome:unknown
                               ▼
                    ~/.fireworks-skill/analytics/events.jsonl   (local, durable)
                               ▼
-                   scripts/fw_telemetry_report.sh        (maintainer, from repo)
+                   scripts/fw_telemetry_report.sh              (maintainer, from repo)
 ```
 
-- **Non-blocking.** The skill only appends one line. Telemetry can never break a
-  user's task (`set -uo pipefail`, every line `|| true`, always `exit 0`).
-- **Crash detector.** Preamble drops `.pending-<session>`; epilogue deletes it on
-  clean finish. A run that dies leaves its marker, and the *next* run reports that
-  earlier run as `outcome:unknown` — so crashes are still captured.
+- **Keyed by `$PPID`, not shell vars.** The agent runs the prolog and epilog as
+  *separate* tool calls, so a shell variable set in one is gone in the other. Both
+  hooks therefore key off `$PPID` (the agent process, stable across calls) and the
+  prolog persists the start time to `.start-<pid>` so the epilog can compute
+  duration. (Using shell vars caused a spurious `unknown` event + `duration:0` on
+  every run — fixed.)
+- **Non-blocking.** The skill only appends one line and never errors out on a
+  telemetry failure, so it can't break the user's task.
+- **Crash detector.** The prolog drops `.pending-<pid>`; the epilog deletes its own
+  on clean finish. A run that dies leaves its marker behind, and the next run (a
+  new `$PPID`) finalizes it as `outcome:unknown` — so crashes are still captured.
 
 ## Consent
 
@@ -62,11 +69,13 @@ touch ~/.fireworks-skill/telemetry-off     # or: export FW_TELEMETRY=off
 
 Collected (per event): `event_type`, `skill_version`, `os`, `session_id`,
 `reference_used`, `outcome`, `error_class` (a short enum, not a message),
-`duration_s`, `question_id`, `followed_recommendation`.
+`duration_s`, `question_id`, `followed_recommendation`. `session_id` is just the
+agent process id (`$PPID`) — it groups events from one run, resets every session,
+and is not a stable device or user identifier.
 
 Never: prompts, code, file paths, dataset contents, API keys, error messages, or
-any device/user identifier. The client has **no free-text fields**, so there's
-nothing to redact or leak.
+any stable device/user identifier. The client has **no free-text fields**, so
+there's nothing to redact or leak.
 
 ## The signals
 

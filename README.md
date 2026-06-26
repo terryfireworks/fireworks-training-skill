@@ -4,11 +4,26 @@ An agent skill that teaches a coding agent (Claude Code, Cursor, Codex, …) to 
 
 ## Install
 
+One line, into any skills-compatible agent (Claude Code, Cursor, Codex, …):
+
 ```bash
 npx skills add terryfireworks/fireworks-training-skill
 ```
 
-Installs into every skills-compatible agent (Claude Code, Cursor, +others). Update later with `npx skills update -y`. Manual: copy `SKILL.md` + `references/` into `~/.claude/skills/fireworks-training/` (or `.cursor/skills/`, or append `SKILL.md` to `AGENTS.md`).
+Update later with `npx skills update -y`. That's it — the skill auto-attaches when a training task comes up.
+
+<details>
+<summary>Dogfooding / contributing (live, full repo)</summary>
+
+To get the full local `references/`, the maintainer report tool, and **live edits** (no reinstall on every change), clone and symlink the repo as the skill:
+
+```bash
+git clone https://github.com/terryfireworks/fireworks-training-skill.git ~/Desktop/fireworks-training-skill
+ln -s ~/Desktop/fireworks-training-skill ~/.claude/skills/fireworks-training
+```
+
+Now edits to `SKILL.md` take effect immediately.
+</details>
 
 ## How it works (progressive disclosure)
 
@@ -24,16 +39,31 @@ References are **link-first** (they link the live `.md` docs, so the agent reads
 
 ## Usage telemetry (local-only)
 
-**The problem.** This skill runs on machines we don't control (Claude Code, Cursor, Codex). We can't read transcripts, so we're blind to what actually trips people up building on Fireworks training — which docs they need, where they get stuck, where the skill's routing is unclear. Without a signal, the skill improves on guesswork.
+**Why.** This skill runs on machines we don't control and we never see the transcripts — so without a signal we're blind to what trips people up building on Fireworks training. This adds that signal, while keeping all data **on the user's machine**.
 
-**What it does.** Each run appends one anonymous line to `~/.fireworks-skill/analytics/events.jsonl`. The logic is inlined in `SKILL.md` so it works on any install (the skills CLI ships only `SKILL.md`). It is **local-only — nothing is transmitted** — and captures no prompts, code, file paths, or keys (no free-text fields at all).
+**How — two hooks the agent runs around each task.** Both are plain bash embedded directly in `SKILL.md` (the skills CLI installs only `SKILL.md`, so nothing external is required). Both are best-effort: on a non-bash host they're skipped silently and never affect the task.
 
-- **Three signals** — *usage* (`reference_used`: which docs people need), *blockers* (`outcome` + `error_class`: where they get stuck — quota, auth, dataset format…), *friction* (`question_id` + `followed_recommendation`: where the skill had to stop and ask, and whether its recommendation was right).
-- **Crash detector** — a run that dies is still recorded (a pending marker is finalized as `unknown` on the next run), so failures aren't invisible.
-- **On by default, easy opt-out** — `touch ~/.fireworks-skill/telemetry-off` or `FW_TELEMETRY=off`.
-- **View it** — `scripts/fw_telemetry_report.sh` summarizes the local log.
+- **Prolog** (runs first) — stamps the start: writes a start-time file and an "in-flight" marker, both keyed by `$PPID` (the agent process, which is stable across the separate tool calls a run makes). The marker is what lets us detect a run that later dies.
+- **Epilog** (runs last) — closes the run: works out the duration, appends **one** event line (which reference was used, success/error, error class, how long), clears this run's marker, and finalizes any *other* leftover marker as a crashed run (`outcome: unknown`).
 
-**Outcomes.** A concrete readout of where people succeed vs. stall on Fireworks training — which feeds two things: (1) tightening the skill itself (better routing, fixing the references people fail on), and (2) a real-world signal of the product's rough edges. During dogfooding it's local-only; a backend collector can be added later (`events.jsonl` is the stable interface). See [`TELEMETRY.md`](TELEMETRY.md) for the full design and privacy model.
+**Where the data lives right now.** Everything is local — **nothing is transmitted anywhere.**
+
+```
+~/.fireworks-skill/analytics/
+├── events.jsonl        ← the log (one JSON object per run)
+├── .start-<pid>        ← transient: run start time (removed by the epilog)
+└── .pending-<pid>      ← transient: in-flight marker for crash detection
+```
+
+Each event captures **no prompts, code, file paths, or keys** — only enum-ish fields (there are no free-text fields to leak). Three signals come out of it:
+
+- **Usage** — `reference_used`: which docs people actually need.
+- **Blockers** — `outcome` + `error_class` (quota, auth, dataset_format, deploy, numerics): where people get stuck.
+- **Friction** — `question_id` + `followed_recommendation`: where the skill had to stop and ask, and whether its recommendation was right.
+
+**Controls.** On by default (local-only). Opt out anytime: `touch ~/.fireworks-skill/telemetry-off` or `export FW_TELEMETRY=off`. View the log with `scripts/fw_telemetry_report.sh` (from the repo).
+
+**Outcomes & what's next.** A concrete readout of where people succeed vs. stall — which feeds (1) a better skill (fix the references/routing people fail on) and (2) a real-world map of the training product's rough edges. During dogfooding it stays local; `events.jsonl` is the stable interface, so a collector can be added later without touching the skill. Before any data leaves a machine, the default flips from opt-out to opt-in. Full design + privacy: [`TELEMETRY.md`](TELEMETRY.md).
 
 ## Status
 
