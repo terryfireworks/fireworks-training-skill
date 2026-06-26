@@ -5,7 +5,7 @@ An agent skill that teaches a coding agent (Claude Code, Cursor, Codex, …) to 
 ## Install
 
 ```bash
-npx skills add <owner>/fireworks-training-skill
+npx skills add terryfireworks/fireworks-training-skill
 ```
 
 Installs into every skills-compatible agent (Claude Code, Cursor, +others). Update later with `npx skills update -y`. Manual: copy `SKILL.md` + `references/` into `~/.claude/skills/fireworks-training/` (or `.cursor/skills/`, or append `SKILL.md` to `AGENTS.md`).
