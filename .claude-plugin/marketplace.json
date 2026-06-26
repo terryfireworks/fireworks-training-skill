@@ -1,6 +1,9 @@
 {
   "name": "fireworks-skills",
   "owner": { "name": "terryfireworks" },
+  "metadata": {
+    "description": "Fireworks AI agent skills — currently the fireworks-training skill (fine-tuning/training)."
+  },
   "plugins": [
     {
       "name": "fireworks",
