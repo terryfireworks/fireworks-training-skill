@@ -1,8 +1,26 @@
 # Telemetry — design & privacy
 
 Adapted from [gstack](https://github.com/garrytan/gstack)'s pattern, trimmed to the
-dogfooding essentials. Goal: learn what trips people up when building on Fireworks
-training — without ever seeing their code, and without standing up any backend yet.
+dogfooding essentials.
+
+## Problem
+
+The skill runs on machines we don't control (Claude Code, Cursor, Codex) and we
+never see the transcripts. So we have no visibility into what actually trips
+people up building on Fireworks training — which references they need, where they
+get stuck, where the skill's routing is ambiguous. Without a signal, every
+improvement to the skill is a guess.
+
+## Outcomes
+
+A concrete, anonymous readout of where people succeed vs. stall, which drives:
+- **A better skill** — fix the references people fail on, tighten ambiguous routing.
+- **A product signal** — the error classes people hit (quota, auth, dataset
+  format, deploy, numerics) are a real-world map of the training product's rough
+  edges.
+
+Goal: get that signal **without ever seeing their code, and without standing up
+any backend yet.**
 
 **Local-only.** Every install writes an anonymous usage log to
 `~/.fireworks-skill/analytics/events.jsonl`. Nothing is transmitted anywhere. A
