@@ -18,8 +18,10 @@ This skill keeps a **local-only** usage log (in `~/.fireworks-skill/`) to help i
 
 ```bash
 mkdir -p ~/.fireworks-skill/analytics
-FW_SID="$$-$(date +%s)"; FW_T0=$(date +%s)
-echo '{"ts":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'","reference":""}' > ~/.fireworks-skill/analytics/.pending-"$FW_SID" 2>/dev/null || true
+# $PPID (the agent process) is stable across separate tool calls, so the
+# epilogue can match this run; a plain shell var would not survive.
+date +%s > ~/.fireworks-skill/analytics/.start-"$PPID" 2>/dev/null || true
+echo '{"ts":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > ~/.fireworks-skill/analytics/.pending-"$PPID" 2>/dev/null || true
 ```
 
 ## Before you build
@@ -62,21 +64,22 @@ At the end of the task, append one local event. **Edit the three variables on th
 
 ```bash
 REF="none"; OUTCOME="success"; ERR=""   # ← edit these three
-D=~/.fireworks-skill/analytics
+D=~/.fireworks-skill/analytics; SID="$PPID"
 if [ "${FW_TELEMETRY:-on}" != off ] && [ ! -f ~/.fireworks-skill/telemetry-off ]; then
   mkdir -p "$D"; TS=$(date -u +%Y-%m-%dT%H:%M:%SZ); OS=$(uname -s|tr 'A-Z' 'a-z'); VER=0.1.0
-  # finalize any crashed prior runs (orphaned markers → outcome:unknown)
+  T0=$(cat "$D/.start-$SID" 2>/dev/null); case "$T0" in ''|*[!0-9]*) T0=$(date +%s);; esac
+  # finalize any crashed prior runs (markers from other sessions → outcome:unknown)
   for f in "$D"/.pending-*; do
     [ -f "$f" ] || continue; sid=$(basename "$f"); sid=${sid#.pending-}
-    [ "$sid" = "${FW_SID:-}" ] && continue
+    [ "$sid" = "$SID" ] && continue
     pts=$(grep -o '"ts":"[^"]*"' "$f" 2>/dev/null|head -1|cut -d'"' -f4)
     printf '{"v":1,"ts":"%s","event_type":"skill_run","skill":"fireworks-training","skill_version":"%s","os":"%s","session_id":"%s","reference_used":"none","outcome":"unknown","error_class":null,"duration_s":null,"question_id":null,"followed_recommendation":null}\n' "$pts" "$VER" "$OS" "$sid" >> "$D/events.jsonl" 2>/dev/null
-    rm -f "$f" 2>/dev/null
+    rm -f "$f" "$D/.start-$sid" 2>/dev/null
   done
-  rm -f "$D/.pending-${FW_SID:-none}" 2>/dev/null
+  rm -f "$D/.pending-$SID" "$D/.start-$SID" 2>/dev/null
   ejson=null; [ -n "$ERR" ] && ejson="\"$ERR\""
   printf '{"v":1,"ts":"%s","event_type":"skill_run","skill":"fireworks-training","skill_version":"%s","os":"%s","session_id":"%s","reference_used":"%s","outcome":"%s","error_class":%s,"duration_s":%s,"question_id":null,"followed_recommendation":null}\n' \
-    "$TS" "$VER" "$OS" "${FW_SID:-none}" "$REF" "$OUTCOME" "$ejson" "$(( $(date +%s) - ${FW_T0:-$(date +%s)} ))" >> "$D/events.jsonl" 2>/dev/null
+    "$TS" "$VER" "$OS" "$SID" "$REF" "$OUTCOME" "$ejson" "$(( $(date +%s) - T0 ))" >> "$D/events.jsonl" 2>/dev/null
 fi
 ```
 
@@ -86,7 +89,7 @@ If you had to stop and ask the user a routing decision, also append a friction e
 QID="route-method"; FOLLOWED=true   # ← edit these two
 [ "${FW_TELEMETRY:-on}" != off ] && [ ! -f ~/.fireworks-skill/telemetry-off ] && \
 printf '{"v":1,"ts":"%s","event_type":"question","skill":"fireworks-training","os":"%s","session_id":"%s","reference_used":"none","outcome":"unknown","error_class":null,"duration_s":null,"question_id":"%s","followed_recommendation":%s}\n' \
-  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(uname -s|tr 'A-Z' 'a-z')" "${FW_SID:-none}" "$QID" "$FOLLOWED" \
+  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(uname -s|tr 'A-Z' 'a-z')" "$PPID" "$QID" "$FOLLOWED" \
   >> ~/.fireworks-skill/analytics/events.jsonl 2>/dev/null || true
 ```
 
