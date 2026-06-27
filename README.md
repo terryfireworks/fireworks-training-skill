@@ -18,11 +18,11 @@ That's it. The `-g` installs it globally, so it works in every project across Cl
 /plugin install fireworks@fireworks-skills
 ```
 
-## Key features
+## What it solves
 
-- **Runs everywhere, with full context.** One skill, every agent harness (Claude Code, Cursor, Codex, and any skills-compatible agent). It auto-attaches on any Fireworks training task and gives the agent the full context for the whole workflow, so it stays versatile from data prep to deploy.
-- **Auto-retrieves docs, always in sync.** Via progressive disclosure the agent fetches the right docs itself. It loads a small router, opens only the reference a task needs, and pulls live pages from `docs.fireworks.ai`. Because it reads the live docs, it stays current with shapes, prices, and limits, and the plugin auto-updates from this repo. You never hunt for or paste documentation.
-- **Self-improving, expert support.** Captures an anonymous signal of what helps and where people get stuck so recurring issues can be reported back to Fireworks to improve the platform, docs, and skill. The signal is anonymous (one event per run: which reference, success or error, duration) with no prompts, code, or keys. In this dogfooding version everything stays local; to share feedback, send your log to Terry (export one-liner in [`dogfooding/`](dogfooding/)). Opt out with `touch ~/.fireworks-skill/telemetry-off`; details in [`TELEMETRY.md`](TELEMETRY.md).
+- **People don't read docs.** It auto-attaches on any training task and gives the agent full context across the whole workflow. The agent fetches the right docs through progressive disclosure, so there's no context bloat from loading everything at once, and you never paste docs in.
+- **The skill drifts out of date.** References link the live docs, and on Claude Code it installs as a plugin that auto-updates from the repo, so the agent always reads current shapes, prices, and limits.
+- **We can't see where people get stuck.** It captures an anonymous signal of what helps and where people hit problems, so recurring issues can be routed back to improve the platform, docs, and skill. Anonymous (one event per run: which reference, success or error, duration), with no prompts, code, or keys. In this dogfooding version it stays local; opt out with `touch ~/.fireworks-skill/telemetry-off`. Details in [`TELEMETRY.md`](TELEMETRY.md).
 
 ## Status
 
